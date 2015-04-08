@@ -54,6 +54,53 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
    *   TRUE if the mail was successfully accepted, otherwise FALSE.
    */
   public function mail(array $message) {
+
+/**
+ * Von Newsletter2Go API Dokumentation v 3.3 Newsletter2Go 12. März 2015:
+ * 4.1 Versenden einer Email
+ *
+ * Um über die Newsletter2Go API eine E-Mail versenden zu können, nutzen sie
+ * PHP newsletter2go libs sendEmail Funktion. Bsp: $n2g->sendEmail($params)
+ *
+ * Notwendige Parameter:
+ *
+ *   to      Die Empfänger-Emailadresse
+ *   from    Die Absender-Emailadresse
+ *   subject Der Betreff der Email
+ *   text    Der Text-Part der Email. Wird dieser Parameter nicht angegeben,
+ *                wird automatisch aus dem html-Teil ein Text-Teil erzeugt.
+ *                Bitte beachten Sie, dass nur einer der beiden Parameter
+ *                text oder html notwendig ist.
+ *   html    Der komplette HTML-Quellcode. Wird dieser Parameter nicht angegeben,
+ *           werden reine Text- Emails (plain/text) versendet.
+ *
+ * Optionale Parameter:
+ *
+ *   id      Die id des Newsletters bei Newsletter2Go. Sie wird benötigt, falls
+ *            Sie die Reporting-Funktionen von Newsletter2Go über die API nutzen
+ *            möchten.
+ *   debug    Mit 1 Einschalten des Debug-Modus. Ist der Debug-Modus
+ *            eingeschaltet, können Sie die API von Newsletter2Go testen, ohne
+ *            dass die Email tatsächlich versendet wird.
+ *   ref      Eine eigene Referenz, die Sie beliebig wählen können.
+ *   date     Versenden der Email zeitversetzt. Es muss ein UNIX-Timestamp
+ *            übergeben werden. Liegt der Timestamp in der Vergangenheit,
+ *            ist er negativ oder leer wird sofort versendet. Wird kein valider
+ *            UNIX-Timestamp übergeben, wird die Email nicht entgegengenommen
+ *            und Fehler-code 420 wird zurückgegeben. Der Timestamp darf
+ *            maximal 1 Jahr in der Zukunft liegen
+ *   reply    Sie können eine alternative Reply- Adresse angeben. Das ist die
+ *                 Email-Adresse, an die eine Email geschickt wird, wenn der
+ *                 Empfänger auf antworten klickt.
+ *   linktracking    An- bzw. Abschalten des Linktrackings. Standardmäßig ist
+ *                   diese Option eingeschaltet. Wird das Linktracking
+ *                   abgeschaltet, werden Links nicht umgeschrieben und damit
+ *                   können Klicks auf Links nicht registriert werden.
+ *   opentracking    An- bzw. Abschalten des Öffnungs- Tracking. Standardmäßig
+ *                   ist diese Option eingeschaltet. Wird das Opentracking
+ *                   abgeschaltet, werden Öffnungen der Emails nicht registriert.
+ **/
+
     // If 'Return-Path' isn't already set in php.ini, we pass it separately
     // as an additional parameter instead of in the header.
     // However, if PHP's 'safe_mode' is on, this is not allowed.
