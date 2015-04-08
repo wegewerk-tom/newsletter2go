@@ -33,12 +33,37 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
    *   The formatted $message.
    */
   public function format(array $message) {
-    // Join the body array into one string.
-    $message['body'] = implode("\n\n", $message['body']);
-    // Convert any HTML to plain-text.
-    $message['body'] = drupal_html_to_text($message['body']);
-    // Wrap the mail body for sending.
-    $message['body'] = drupal_wrap_mail($message['body']);
+
+    /**
+     * Leave message id alone.
+     *
+     * The final e-mail id for e-mail altering is {$module}_{$key}
+     * from drupal_mail().
+     *
+     * $module: A module name to invoke hook_mail() on.
+     *           The {$module}_mail() hook will be called to complete
+     *           the $message structure which will already contain common defaults.
+     * $key:    A key to identify the e-mail sent.
+     */
+
+    $message['id'] = $message['id'];
+
+    // Remove newlines and carriage returns from the subject line
+    $message['subject'] = str_replace("\n", "", $message['subject']);
+    $message['subject'] = str_replace("\r", "", $message['subject']);
+
+    /**
+     * Leave 'body' alone. This module always assumes it's HTML formatted, and
+     * sends the 'html' parameter (instead of 'text' parameter) to Newsletter2Go.
+     * Then Newsletter2Go can handle transforming HTML into plaintext.
+     */
+    // $message['body'] = $message['body'];
+
+    /**
+     * Leave 'headers' alone. These cannot be passed to Newsletter2Go.
+     */
+    // $message['headers'] = $message['headers'];
+
     return $message;
   }
 

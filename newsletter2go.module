@@ -1,13 +1,10 @@
 <?php
 
-
-// drupal_mail('w21_newsletter2go', 'doi', $email, $GLOBALS['language'], $mail_params);
-
 /**
  * Implements hook_init() for testing.
  */
 function newsletter2go_init() {
-   // dpm(newsletter2go_get_client());
+
 }
 
 function newsletter2go_get_client($key = "", $api_lang = "", $debug = NULL) {
