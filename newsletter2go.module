@@ -1,0 +1,62 @@
+<?php
+
+
+// drupal_mail('w21_newsletter2go', 'doi', $email, $GLOBALS['language'], $mail_params);
+
+/**
+ * Implements hook_init() for testing.
+ */
+function newsletter2go_init() {
+  // Try to load the library and check if that worked.
+  if (($library = libraries_load('newsletter2go')) && !empty($library['loaded'])) {
+
+  }
+}
+
+/**
+ * Implements hook_requirements()
+ */
+function newsletter2go_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'runtime') {
+    $t = get_t();
+    if ($path = libraries_get_path('newsletter2go')) {
+      if (file_exists($path . '/newsletter2go.class.php')) {
+        $requirements['newsletter2go'] = array(
+          'title' => $t('Newsletter2Go'),
+          'value' => $t('newsletter2go.class.php found under !path', array('!path' => $path . '/newsletter2go.class.php')),
+          'severity' => REQUIREMENT_OK,
+        );
+        return $requirements;
+      }
+    }
+    $requirements['newsletter2go'] = array(
+      'title' => $t('Newsletter2Go'),
+      'value' => $t('newsletter2go.class.php library was not found. !download the library and place in under sites/all/libraries/newsletter2go, so that the library can be found at sites/all/libraries/newsletter2go/newsletter2go.class.php.', array('!download' => l(t('Download'), 'http://www.newsletter2go.de/'))),
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+  return $requirements;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function newsletter2go_libraries_info() {
+  $libraries = array();
+  $libraries['newsletter2go'] = array(
+    'name' => 'newsletter2go',
+    'files' => array(
+      'php' => array(
+        'newsletter2go.class.php',
+      ),
+    ),
+    'version callback' => 'newsletter2go_version_callback',
+  );
+  return $libraries;
+}
+
+
+function newsletter2go_version_callback() {
+  return TRUE;
+}

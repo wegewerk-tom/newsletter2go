@@ -1,0 +1,6 @@
+name = Newsletter2Go
+description = API and Configuration for Newsletter2Go
+core = 7.x
+package = Mail
+dependencies[] = libraries
+dependencies[] = mailsystem
