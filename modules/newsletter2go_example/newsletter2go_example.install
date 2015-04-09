@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * Implements hook_enable().
+ */
+function newsletter2go_example_enable() {
+  mailsystem_set(array('newsletter2go_example' => 'Newsletter2GoMailSystem'));
+}
+
+/**
+ * Implements hook_disable().
+ */
+function newsletter2go_example_disable() {
+  mailsystem_clear(array('newsletter2go_example' => 'Newsletter2GoMailSystem'));
+}

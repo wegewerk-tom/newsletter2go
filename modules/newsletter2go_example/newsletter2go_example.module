@@ -1,0 +1,65 @@
+<?php
+/**
+ * @file
+ * Code for the newsletter2go_example.
+ */
+function newsletter2go_example_init() {
+
+  // Use the site_mail for the test authentication / from / to
+  $email_address = variable_get('site_mail', "");
+
+  // Compose any drupal_mail email.
+  // We use an example and include the $base_url in the message body.
+  $module = 'newsletter2go_example';
+  $key    = 'example';
+  $from   = $email_address;
+  $to     = $email_address;
+  global $language;
+  $send   = TRUE;
+
+  // Set optional Newsletter2Go params.
+  $params = array(
+    // newsletter_id can be used for tracking in reports.
+    'newsletter_id' => NULL,
+
+    // Enables debug mode
+    // No emails sent, but API requests logged to sys_get_temp_dir().
+    'debug'         => 0,
+
+    // Send date is a UNIX timestamp.
+    // Negative or empty will send the email right away.
+    // Otherwise will be queued for sending up to a year.
+    'send_date'     => NULL,
+
+    // If ref is left unset a unique hash will be generated.
+    'ref'           => "test_newsletter2go_message",
+
+    // Reply-to can be set here.
+    'reply'         => $email_address,
+
+    // En/dis-ables link tracking
+    'linktracking'  => 0,
+
+    // En/dis-ables open tracking
+    'opentracking'  => 0,
+  );
+
+  // Send the message!
+  // Note that subject and body must still be set in the mail hook.
+  $message = drupal_mail($module, $key, $to, $language, $params, $from, $send);
+  drupal_set_message(t("Test Newsletter2Go message sent to %email", array('%email' => $email_address)), 'status', FALSE);
+}
+
+
+/**
+ * Implements hook_mail().
+ */
+function newsletter2go_example_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'example':
+    default:
+      global $base_url;
+      $message['subject'] = "Test newsletter2go message.";
+      $message['body'][] = $base_url;
+  }
+}
