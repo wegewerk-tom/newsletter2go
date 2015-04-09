@@ -88,6 +88,7 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *
      * Optionale Parameter:
      *
+     *   $message['params']['newsletter_id']
      *   id      Die id des Newsletters bei Newsletter2Go. Sie wird benötigt, falls
      *            Sie die Reporting-Funktionen von Newsletter2Go über die API nutzen
      *            möchten.
@@ -111,6 +112,7 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
     $message['newsletter2go']['ref'] = empty($message['params']['ref']) ? FALSE : (string) $message['params']['ref'];
 
     /**
+     *   $message['params']['send_date']
      *   date     Versenden der Email zeitversetzt. Es muss ein UNIX-Timestamp
      *            übergeben werden. Liegt der Timestamp in der Vergangenheit,
      *            ist er negativ oder leer wird sofort versendet. Wird kein valider
