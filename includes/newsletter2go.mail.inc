@@ -140,7 +140,7 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *                   ist diese Option eingeschaltet. Wird das Opentracking
      *                   abgeschaltet, werden Öffnungen der Emails nicht registriert.
      **/
-    $message['newsletter2go']['opentracking'] = empty($message['params']['linktracking']) ? FALSE : (int) $message['params']['opentracking'];
+    $message['newsletter2go']['opentracking'] = empty($message['params']['opentracking']) ? FALSE : (int) $message['params']['opentracking'];
 
     // Clean out unused params.
     foreach($message['newsletter2go'] as $key => $value) {
