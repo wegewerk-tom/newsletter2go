@@ -1,16 +1,9 @@
 <?php
 
-/**
- * Implements hook_init() for testing.
- */
-function newsletter2go_init() {
-
-}
-
-function newsletter2go_get_client($key = "", $api_lang = "", $debug = NULL) {
+function newsletter2go_get_client($key = NULL, $api_lang = NULL, $debug = NULL) {
   $library = libraries_load("newsletter2go");
 
-  if ( empty($library['loaded'])) {
+  if (empty($library['loaded'])) {
       $args = array(
         '%library' => 'Newsletter2Go',
         '!error_message' => $library['error message'],
@@ -19,7 +12,7 @@ function newsletter2go_get_client($key = "", $api_lang = "", $debug = NULL) {
       return FALSE;
   }
 
-  if(empty($key)) {
+  if(is_null($key)) {
     $key = variable_get('newsletter2go_key', '');
     if(empty($key)) {
       drupal_set_message(t("In order to use the Newsletter2Go API the variable 'newsletter2go_key' must be set included in settings.php's \$conf array. See newsletter2go module's README.txt for more info."), 'error', TRUE);
@@ -27,14 +20,13 @@ function newsletter2go_get_client($key = "", $api_lang = "", $debug = NULL) {
     }
   }
 
-  if(empty($api_lang)) {
+  if(is_null($api_lang)) {
     $lang = variable_get('newsletter2go_api_lang', "de");
   }
 
-  if(empty($debug)) {
-    $lang = variable_get('newsletter2go_debug', FALSE);
+  if(is_null($debug)) {
+    $debug = variable_get('newsletter2go_debug', 0);
   }
-
   return new newsletter2go($key, $lang, $debug);
 }
 

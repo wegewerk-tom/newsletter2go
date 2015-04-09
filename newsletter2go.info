@@ -2,5 +2,6 @@ name = Newsletter2Go
 description = API and Configuration for Newsletter2Go
 core = 7.x
 package = Mail
+files[] = includes/newsletter2go.mail.inc
 dependencies[] = libraries
 dependencies[] = mailsystem

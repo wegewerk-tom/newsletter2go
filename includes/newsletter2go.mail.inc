@@ -10,7 +10,7 @@
  */
 class Newsletter2GoMailSystem implements MailSystemInterface {
   /**
-   * Concatenate and wrap the e-mail body for plain-text mails.
+   * Prepare e-mail $message.
    *
    * @param $message
    *   A message array, as described in hook_mail_alter().
@@ -33,7 +33,6 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
    *   The formatted $message.
    */
   public function format(array $message) {
-
     /**
      * Leave message id alone.
      *
@@ -58,9 +57,10 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
     $message['subject'] = str_replace("\r", "", $message['subject']);
 
     /**
-     * Leave 'body' alone. This module always assumes it's HTML formatted, and
-     * sends the 'html' parameter (instead of 'text' parameter) to Newsletter2Go.
-     * Then Newsletter2Go can handle transforming HTML into plaintext.
+     * Leave 'body' mostly alone. This module always assumes it's HTML formatted,
+     * and sends the 'html' parameter (instead of 'text' parameter) to
+     * Newsletter2Go. After that Newsletter2Go can handle transforming HTML into
+     * plaintext.
      */
     // $message['body'] = $message['body'];
 
@@ -75,7 +75,7 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
     // $message['language'] = $message['language'];
 
     /**
-     * Leave 'send' alone for now.
+     * Leave 'send' alone.
      */
     // $message['send'] = $message['send'];
 
@@ -93,21 +93,21 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *            Sie die Reporting-Funktionen von Newsletter2Go über die API nutzen
      *            möchten.
      **/
-    $id = empty($message['params']['newsletter_id']) ? FALSE : $message['params']['newsletter_id'];
+    $message['newsletter2go']['newsletter_id'] = empty($message['params']['newsletter_id']) ? FALSE : $message['params']['newsletter_id'];
 
     /**
      *   debug    Mit 1 Einschalten des Debug-Modus. Ist der Debug-Modus
      *            eingeschaltet, können Sie die API von Newsletter2Go testen, ohne
      *            dass die Email tatsächlich versendet wird.
      */
-    $debug         = empty($message['params']['debug']) ? FALSE : (int) $message['params']['debug'];
+    $message['newsletter2go']['debug'] = empty($message['params']['debug']) ? 0 : (int) $message['params']['debug'];
 
     /**
      *   ref      Eine eigene Referenz, die Sie beliebig wählen können.
      */
     // Set a unique ref ID if none is given.
     if(empty($message['params']['ref'])) {
-      $message['params']['ref'] = drupal_hash_base64(date(DATE_RFC3339) . $message['to'] . $message['from'] . $message['subject'] . $message['body']);
+      $message['params']['ref'] = drupal_hash_base64(date(DATE_RFC3339) . $message['to'] . $message['from'] . $message['subject'] . serialize($message['body']));
     }
     $message['newsletter2go']['ref'] = empty($message['params']['ref']) ? FALSE : (string) $message['params']['ref'];
 
@@ -116,8 +116,8 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *   date     Versenden der Email zeitversetzt. Es muss ein UNIX-Timestamp
      *            übergeben werden. Liegt der Timestamp in der Vergangenheit,
      *            ist er negativ oder leer wird sofort versendet. Wird kein valider
-     *            UNIX-Timestamp übergeben, wird die Email nicht entgegengenommen
-     *            und Fehler-code 420 wird zurückgegeben. Der Timestamp darf
+     *            UNIX-Timestamp übergeben, wird die Email nicht entgegengenommen
+     *            und Fehler-code 420 wird zurückgegeben. Der Timestamp darf
      *            maximal 1 Jahr in der Zukunft liegen
      */
     $message['newsletter2go']['date'] = empty($message['params']['send_date']) ? FALSE : (int) $message['params']['send_date'];
@@ -149,13 +149,18 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
       if($value === FALSE) {
         unset($message['newsletter2go'][$key]);
       }
-    );
+    }
+
+    // Support pseudo_sess_email_authn
+    if(module_exists('pseudo_sess_email_authn')) {
+      $message['pseudo_sess_email_authn'] = empty($message['params']['pseudo_sess_email_authn']) ? FALSE : $message['params']['pseudo_sess_email_authn'];
+    }
 
     return $message;
   }
 
   /**
-   * Send an e-mail message, using Drupal variables and default settings.
+   * Send an e-mail message, using Newsletter2Go.
    *
    * @see http://php.net/manual/function.mail.php
    * @see drupal_mail()
@@ -167,12 +172,19 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
    */
   public function mail(array $message) {
 
-    $n2g = newsletter2go_get_client();
-
     // Initialize optional API params from $message
-    if(empty($message['newsletter2go']) === FALSE {
-      $params = $message['newsletter2go'];
+    if(empty($message['newsletter2go']) === FALSE) {
+      $params_optional = $message['newsletter2go'];
     }
+
+    // NULL triggers usage of module's default API key.
+    $key = NULL;
+    // NULL triggers usage of module's default language.
+    $language = NULL;
+    // Should always be set in format, but just-in-case...
+    $debug = empty($params['debug']) ? 0 : $params['debug'];
+
+    $n2g = newsletter2go_get_client($key, $language, $debug);
 
     /**
      * Von Newsletter2Go API Dokumentation v 3.3 Newsletter2Go 12. März 2015:
@@ -192,20 +204,25 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *                text oder html notwendig ist.
      *   html    Der komplette HTML-Quellcode. Wird dieser Parameter nicht
      *            angegeben, werden reine Text- Emails (plain/text) versendet.
-     **/
-
-    /**
-     * This module always assumes body is HTML formatted, and sends the 'html'
-     * parameter (instead of 'text' parameter) to Newsletter2Go. Then
+     *
+     * Note: This module always assumes body is HTML formatted, and sends the
+     * 'html' parameter (instead of 'text' parameter) to Newsletter2Go. Then
      * Newsletter2Go can handle transforming HTML into plaintext.
      */
-    $params['to']           = $message['to'],
-    $params['from']         = $message['from'],
-    $params['subject']      = $message['subject'],
-    // $params['text'] = $message['body'], // See comment above.
-    $params['html']         = $message['body'],
 
-    $n2g->sendEmail($params)
-    return $mail_result;
+    $body = is_array($message['body']) ? implode(" ", $message['body']) : $message['body'];
+
+    $params_required = array(
+      'to'      => trim($message['to']),
+      'from'    => trim($message['from']),
+      'subject' => trim($message['subject']),
+      'html'    => $body,
+    );
+
+    $response = $n2g->sendEmail(array_merge($params_optional, $params_required));
+    if($response['status'] == 200) {
+      return TRUE;
+    }
+    return FALSE;
   }
 }

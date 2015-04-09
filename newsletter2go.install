@@ -1,12 +1,12 @@
 <?php
 
-
 /**
  * Implements hook_enable().
  */
 function newsletter2go_enable() {
   mailsystem_set(array('newsletter2go' => 'Newsletter2GoMailSystem'));
 }
+
 /**
  * Implements hook_disable().
  */
