@@ -1,6 +1,17 @@
-Note: This module always assumes body is formatted HTML, and sends the
-     'html' parameter (instead of 'text' parameter) to Newsletter2Go. This way
+This module makes it easier to send emails with Newsletter2Go.
+
+__DEPENDANCIES__
+
+* Mail System (mailsystem)
+* Libraries API (libraries)
+
+Note: For now this module always assumes body is formatted HTML, and sends the
+     'html' parameter (instead of 'text' parameter). This way
      Newsletter2Go can handle transforming the HTML into plaintext.
+
+__INSTALLATION__
+
+Download the Newsletter2Go PHP class into sites/all/libraries/newsletter2go.
 
 Set the Newsletter2Go API key in settings.php or with variable_set().
 
