@@ -45,8 +45,13 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *           the $message structure which will already contain common defaults.
      * $key:    A key to identify the e-mail sent.
      */
+    // $message['id'] = $message['id'];
 
-    $message['id'] = $message['id'];
+    /**
+     * Leave to and from alone.
+     */
+    // $message['to'] = $message['to'];
+    // $message['from'] = $message['from'];
 
     // Remove newlines and carriage returns from the subject line
     $message['subject'] = str_replace("\n", "", $message['subject']);
@@ -64,6 +69,86 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      */
     // $message['headers'] = $message['headers'];
 
+    /**
+     * Leave 'language' alone for now.
+     */
+    // $message['language'] = $message['language'];
+
+    /**
+     * Leave 'send' alone for now.
+     */
+    // $message['send'] = $message['send'];
+
+    /**
+     * Below Newsletter2go optional parameters
+     * will be processed from the $message['params'].
+     *
+     * Von Newsletter2Go API Dokumentation v 3.3 Newsletter2Go 12. März 2015:
+     * 4.1 Versenden einer Email
+     *
+     * Optionale Parameter:
+     *
+     *   id      Die id des Newsletters bei Newsletter2Go. Sie wird benötigt, falls
+     *            Sie die Reporting-Funktionen von Newsletter2Go über die API nutzen
+     *            möchten.
+     **/
+    $id = empty($message['params']['newsletter_id']) ? FALSE : $message['params']['newsletter_id'];
+
+    /**
+     *   debug    Mit 1 Einschalten des Debug-Modus. Ist der Debug-Modus
+     *            eingeschaltet, können Sie die API von Newsletter2Go testen, ohne
+     *            dass die Email tatsächlich versendet wird.
+     */
+    $debug         = empty($message['params']['debug']) ? FALSE : (int) $message['params']['debug'];
+
+    /**
+     *   ref      Eine eigene Referenz, die Sie beliebig wählen können.
+     */
+    // Set a unique ref ID if none is given.
+    if(empty($message['params']['ref'])) {
+      $message['params']['ref'] = drupal_hash_base64(date(DATE_RFC3339) . $message['to'] . $message['from'] . $message['subject'] . $message['body']);
+    }
+    $message['newlsetter2go']['ref'] = empty($message['params']['ref']) ? FALSE : (string) $message['params']['ref'];
+
+    /**
+     *   date     Versenden der Email zeitversetzt. Es muss ein UNIX-Timestamp
+     *            übergeben werden. Liegt der Timestamp in der Vergangenheit,
+     *            ist er negativ oder leer wird sofort versendet. Wird kein valider
+     *            UNIX-Timestamp übergeben, wird die Email nicht entgegengenommen
+     *            und Fehler-code 420 wird zurückgegeben. Der Timestamp darf
+     *            maximal 1 Jahr in der Zukunft liegen
+     */
+    $message['newlsetter2go']['date'] = empty($message['params']['send_date']) ? FALSE : (int) $message['params']['send_date'];
+
+    /**
+     *   reply    Sie können eine alternative Reply- Adresse angeben. Das ist die
+     *                 Email-Adresse, an die eine Email geschickt wird, wenn der
+     *                 Empfänger auf antworten klickt.
+     */
+    $message['newlsetter2go']['reply'] = empty($message['params']['reply']) ? FALSE : (string) $message['params']['reply'];
+
+    /*
+     *   linktracking    An- bzw. Abschalten des Linktrackings. Standardmäßig ist
+     *                   diese Option eingeschaltet. Wird das Linktracking
+     *                   abgeschaltet, werden Links nicht umgeschrieben und damit
+     *                   können Klicks auf Links nicht registriert werden.
+     */
+    $message['newlsetter2go']['linktracking'] = empty($message['params']['reply']) ? FALSE : (int) $message['params']['linktracking'];
+
+    /**
+     *   opentracking    An- bzw. Abschalten des Öffnungs- Tracking. Standardmäßig
+     *                   ist diese Option eingeschaltet. Wird das Opentracking
+     *                   abgeschaltet, werden Öffnungen der Emails nicht registriert.
+     **/
+    $message['newlsetter2go']['opentracking'] = empty($message['params']['reply']) ? FALSE : (int) $message['params']['opentracking'];
+
+    // Clean out unused params.
+    foreach($message['newlsetter2go'] as $key => $value) {
+      if($value === FALSE) {
+        unset($message['newlsetter2go'][$key]);
+      }
+    );
+
     return $message;
   }
 
@@ -80,119 +165,45 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
    */
   public function mail(array $message) {
 
-/**
- * Von Newsletter2Go API Dokumentation v 3.3 Newsletter2Go 12. März 2015:
- * 4.1 Versenden einer Email
- *
- * Um über die Newsletter2Go API eine E-Mail versenden zu können, nutzen sie
- * PHP newsletter2go libs sendEmail Funktion. Bsp: $n2g->sendEmail($params)
- *
- * Notwendige Parameter:
- *
- *   to      Die Empfänger-Emailadresse
- *   from    Die Absender-Emailadresse
- *   subject Der Betreff der Email
- *   text    Der Text-Part der Email. Wird dieser Parameter nicht angegeben,
- *                wird automatisch aus dem html-Teil ein Text-Teil erzeugt.
- *                Bitte beachten Sie, dass nur einer der beiden Parameter
- *                text oder html notwendig ist.
- *   html    Der komplette HTML-Quellcode. Wird dieser Parameter nicht angegeben,
- *           werden reine Text- Emails (plain/text) versendet.
- *
- * Optionale Parameter:
- *
- *   id      Die id des Newsletters bei Newsletter2Go. Sie wird benötigt, falls
- *            Sie die Reporting-Funktionen von Newsletter2Go über die API nutzen
- *            möchten.
- *   debug    Mit 1 Einschalten des Debug-Modus. Ist der Debug-Modus
- *            eingeschaltet, können Sie die API von Newsletter2Go testen, ohne
- *            dass die Email tatsächlich versendet wird.
- *   ref      Eine eigene Referenz, die Sie beliebig wählen können.
- *   date     Versenden der Email zeitversetzt. Es muss ein UNIX-Timestamp
- *            übergeben werden. Liegt der Timestamp in der Vergangenheit,
- *            ist er negativ oder leer wird sofort versendet. Wird kein valider
- *            UNIX-Timestamp übergeben, wird die Email nicht entgegengenommen
- *            und Fehler-code 420 wird zurückgegeben. Der Timestamp darf
- *            maximal 1 Jahr in der Zukunft liegen
- *   reply    Sie können eine alternative Reply- Adresse angeben. Das ist die
- *                 Email-Adresse, an die eine Email geschickt wird, wenn der
- *                 Empfänger auf antworten klickt.
- *   linktracking    An- bzw. Abschalten des Linktrackings. Standardmäßig ist
- *                   diese Option eingeschaltet. Wird das Linktracking
- *                   abgeschaltet, werden Links nicht umgeschrieben und damit
- *                   können Klicks auf Links nicht registriert werden.
- *   opentracking    An- bzw. Abschalten des Öffnungs- Tracking. Standardmäßig
- *                   ist diese Option eingeschaltet. Wird das Opentracking
- *                   abgeschaltet, werden Öffnungen der Emails nicht registriert.
- **/
+    $n2g = newsletter2go_get_client();
 
-    // If 'Return-Path' isn't already set in php.ini, we pass it separately
-    // as an additional parameter instead of in the header.
-    // However, if PHP's 'safe_mode' is on, this is not allowed.
-    if (isset($message['headers']['Return-Path']) && !ini_get('safe_mode')) {
-      $return_path_set = strpos(ini_get('sendmail_path'), ' -f');
-      if (!$return_path_set) {
-        $message['Return-Path'] = $message['headers']['Return-Path'];
-        unset($message['headers']['Return-Path']);
-      }
+    // Initialize optional API params from $message
+    if(empty($message['newlsetter2go']) === FALSE {
+      $params = $message['newlsetter2go'];
     }
-    $mimeheaders = array();
-    foreach ($message['headers'] as $name => $value) {
-      $mimeheaders[] = $name . ': ' . mime_header_encode($value);
-    }
-    $line_endings = variable_get('mail_line_endings', MAIL_LINE_ENDINGS);
-    // Prepare mail commands.
-    $mail_subject = mime_header_encode($message['subject']);
-    // Note: e-mail uses CRLF for line-endings. PHP's API requires LF
-    // on Unix and CRLF on Windows. Drupal automatically guesses the
-    // line-ending format appropriate for your system. If you need to
-    // override this, adjust $conf['mail_line_endings'] in settings.php.
-    $mail_body = preg_replace('@\r?\n@', $line_endings, $message['body']);
-    // For headers, PHP's API suggests that we use CRLF normally,
-    // but some MTAs incorrectly replace LF with CRLF. See #234403.
-    $mail_headers = join("\n", $mimeheaders);
 
-    // We suppress warnings and notices from mail() because of issues on some
-    // hosts. The return value of this method will still indicate whether mail
-    // was sent successfully.
-    if (!isset($_SERVER['WINDIR']) && strpos($_SERVER['SERVER_SOFTWARE'], 'Win32') === FALSE) {
-      if (isset($message['Return-Path']) && !ini_get('safe_mode')) {
-        // On most non-Windows systems, the "-f" option to the sendmail command
-        // is used to set the Return-Path. There is no space between -f and
-        // the value of the return path.
-        $mail_result = @mail(
-          $message['to'],
-          $mail_subject,
-          $mail_body,
-          $mail_headers,
-          '-f' . $message['Return-Path']
-        );
-      }
-      else {
-        // The optional $additional_parameters argument to mail() is not
-        // allowed if safe_mode is enabled. Passing any value throws a PHP
-        // warning and makes mail() return FALSE.
-        $mail_result = @mail(
-          $message['to'],
-          $mail_subject,
-          $mail_body,
-          $mail_headers
-        );
-      }
-     }
-     else {
-      // On Windows, PHP will use the value of sendmail_from for the
-      // Return-Path header.
-      $old_from = ini_get('sendmail_from');
-      ini_set('sendmail_from', $message['Return-Path']);
-      $mail_result = @mail(
-         $message['to'],
-         $mail_subject,
-         $mail_body,
-         $mail_headers
-       );
-      ini_set('sendmail_from', $old_from);
-     }
-     return $mail_result;
+    /**
+     * Von Newsletter2Go API Dokumentation v 3.3 Newsletter2Go 12. März 2015:
+     * 4.1 Versenden einer Email
+     *
+     * Um über die Newsletter2Go API eine E-Mail versenden zu können, nutzen sie
+     * PHP newsletter2go libs sendEmail Funktion. Bsp: $n2g->sendEmail($params)
+     *
+     * Notwendige Parameter:
+     *
+     *   to      Die Empfänger-Emailadresse
+     *   from    Die Absender-Emailadresse
+     *   subject Der Betreff der Email
+     *   text    Der Text-Part der Email. Wird dieser Parameter nicht angegeben,
+     *                wird automatisch aus dem html-Teil ein Text-Teil erzeugt.
+     *                Bitte beachten Sie, dass nur einer der beiden Parameter
+     *                text oder html notwendig ist.
+     *   html    Der komplette HTML-Quellcode. Wird dieser Parameter nicht
+     *            angegeben, werden reine Text- Emails (plain/text) versendet.
+     **/
+
+    /**
+     * This module always assumes body is HTML formatted, and sends the 'html'
+     * parameter (instead of 'text' parameter) to Newsletter2Go. Then
+     * Newsletter2Go can handle transforming HTML into plaintext.
+     */
+    $params['to']           = $message['to'],
+    $params['from']         = $message['from'],
+    $params['subject']      = $message['subject'],
+    // $params['text'] = $message['body'], // See comment above.
+    $params['html']         = $message['body'],
+
+    $n2g->sendEmail($params)
+    return $mail_result;
   }
 }
