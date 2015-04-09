@@ -108,7 +108,7 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
     if(empty($message['params']['ref'])) {
       $message['params']['ref'] = drupal_hash_base64(date(DATE_RFC3339) . $message['to'] . $message['from'] . $message['subject'] . $message['body']);
     }
-    $message['newlsetter2go']['ref'] = empty($message['params']['ref']) ? FALSE : (string) $message['params']['ref'];
+    $message['newsletter2go']['ref'] = empty($message['params']['ref']) ? FALSE : (string) $message['params']['ref'];
 
     /**
      *   date     Versenden der Email zeitversetzt. Es muss ein UNIX-Timestamp
@@ -118,14 +118,14 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *            und Fehler-code 420 wird zurückgegeben. Der Timestamp darf
      *            maximal 1 Jahr in der Zukunft liegen
      */
-    $message['newlsetter2go']['date'] = empty($message['params']['send_date']) ? FALSE : (int) $message['params']['send_date'];
+    $message['newsletter2go']['date'] = empty($message['params']['send_date']) ? FALSE : (int) $message['params']['send_date'];
 
     /**
      *   reply    Sie können eine alternative Reply- Adresse angeben. Das ist die
      *                 Email-Adresse, an die eine Email geschickt wird, wenn der
      *                 Empfänger auf antworten klickt.
      */
-    $message['newlsetter2go']['reply'] = empty($message['params']['reply']) ? FALSE : (string) $message['params']['reply'];
+    $message['newsletter2go']['reply'] = empty($message['params']['reply']) ? FALSE : (string) $message['params']['reply'];
 
     /*
      *   linktracking    An- bzw. Abschalten des Linktrackings. Standardmäßig ist
@@ -133,19 +133,19 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
      *                   abgeschaltet, werden Links nicht umgeschrieben und damit
      *                   können Klicks auf Links nicht registriert werden.
      */
-    $message['newlsetter2go']['linktracking'] = empty($message['params']['reply']) ? FALSE : (int) $message['params']['linktracking'];
+    $message['newsletter2go']['linktracking'] = empty($message['params']['linktracking']) ? FALSE : (int) $message['params']['linktracking'];
 
     /**
      *   opentracking    An- bzw. Abschalten des Öffnungs- Tracking. Standardmäßig
      *                   ist diese Option eingeschaltet. Wird das Opentracking
      *                   abgeschaltet, werden Öffnungen der Emails nicht registriert.
      **/
-    $message['newlsetter2go']['opentracking'] = empty($message['params']['reply']) ? FALSE : (int) $message['params']['opentracking'];
+    $message['newsletter2go']['opentracking'] = empty($message['params']['linktracking']) ? FALSE : (int) $message['params']['opentracking'];
 
     // Clean out unused params.
-    foreach($message['newlsetter2go'] as $key => $value) {
+    foreach($message['newsletter2go'] as $key => $value) {
       if($value === FALSE) {
-        unset($message['newlsetter2go'][$key]);
+        unset($message['newsletter2go'][$key]);
       }
     );
 
@@ -168,8 +168,8 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
     $n2g = newsletter2go_get_client();
 
     // Initialize optional API params from $message
-    if(empty($message['newlsetter2go']) === FALSE {
-      $params = $message['newlsetter2go'];
+    if(empty($message['newsletter2go']) === FALSE {
+      $params = $message['newsletter2go'];
     }
 
     /**
