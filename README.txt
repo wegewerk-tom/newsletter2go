@@ -9,7 +9,7 @@ Note: For now this module always assumes body is formatted HTML, and sends the
      'html' parameter (instead of 'text' parameter). This way
      Newsletter2Go can handle transforming the HTML into plaintext.
 
-__INSTALLATION__
+__CONFIGURATION__
 
 Download the Newsletter2Go PHP class into sites/all/libraries/newsletter2go.
 
@@ -30,6 +30,8 @@ there are two options.
 
     1) Change mailsystem config at admin/config/system/mailsystem
     2) mailsystem_set(array(mailsystem_default_id() => 'Newsletter2GoMailSystem'));
+
+__USAGE___
 
 For a NON-PRODUCTION working example see the code in newsletter2go_example.
 
