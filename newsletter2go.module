@@ -1,6 +1,12 @@
 <?php
 
 function newsletter2go_get_client($key = NULL, $api_lang = NULL, $debug = NULL) {
+  static $client;
+
+  if(!empty($client)) {
+    return $client;
+  }
+
   $library = libraries_load("newsletter2go");
 
   if (empty($library['loaded'])) {
@@ -26,8 +32,13 @@ function newsletter2go_get_client($key = NULL, $api_lang = NULL, $debug = NULL) 
 
   if(is_null($debug)) {
     $debug = variable_get('newsletter2go_debug', 0);
+    if($debug) {
+      drupal_set_message(t("Newsletter2Go debug logging to: ". sys_get_temp_dir() ."/n2g.debug"), 'status', FALSE);
+    }
   }
-  return new newsletter2go($key, $lang, $debug);
+
+  $client = new newsletter2go($key, $lang, $debug);
+  return $client;
 }
 
 /**
@@ -76,4 +87,39 @@ function newsletter2go_libraries_info() {
 
 function newsletter2go_version_callback() {
   return TRUE;
+}
+
+function newsletter2go_get_newsletter($newsletter_id) {
+  $n2go = newsletter2go_get_client();
+  $params = array(
+    'id' => (int) $newsletter_id,
+  );
+  return($n2go->getNewsletter($params));
+}
+
+function newsletter2go_get_newsletter_statistics($newsletter_id) {
+  $n2go = newsletter2go_get_client();
+  $params = array(
+    'id' => (int) $newsletter_id,
+  );
+  return($n2go->getStatistics($params));
+}
+
+function newsletter2go_create_newsletter($newsletter_name, $subject, $html, $from, $text = '', $reply = NULL, $reference = NULL) {
+
+  $reply = empty($reply) ? $from : $reply;
+  $reference = empty($reference) ? 'drupal:'. time() : $reference;
+
+  $n2go = newsletter2go_get_client();
+  $params = array(
+    'name' => $newsletter_name,
+    'type' => 'email',
+    'subject' => $subject,
+    'html' => $html,
+    'text' => $text,
+    'from' => $from,
+    'reply' => $reply,
+    'reference' => $reference,
+  );
+  return($n2go->createNL($params));
 }
