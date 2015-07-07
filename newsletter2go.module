@@ -89,6 +89,20 @@ function newsletter2go_version_callback() {
   return TRUE;
 }
 
+function newsletter2go_send_newsletter($newsletter_id) {
+  $n2go = newsletter2go_get_client();
+  $params = array(
+    'id' => (int) $newsletter_id,
+  );
+  $response = $n2go->sendNL($params);
+  if(!empty($response['status']) && $response['status'] == 200) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
 function newsletter2go_get_newsletter($newsletter_id) {
   $n2go = newsletter2go_get_client();
   $params = array(
