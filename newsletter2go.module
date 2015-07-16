@@ -14,14 +14,14 @@ function newsletter2go_get_client($key = NULL, $api_lang = NULL, $debug = NULL) 
         '%library' => 'Newsletter2Go',
         '!error_message' => $library['error message'],
       );
-      drupal_set_message(t("Problem loading %library library: !error_message", $args), 'error', TRUE);
+      drupal_set_message(t("Problem loading %library library: !error_message", $args), 'error', FALSE);
       return FALSE;
   }
 
   if(is_null($key)) {
     $key = variable_get('newsletter2go_key', '');
     if(empty($key)) {
-      drupal_set_message(t("In order to use the Newsletter2Go API the variable 'newsletter2go_key' must be set included in settings.php's \$conf array. See newsletter2go module's README.txt for more info."), 'error', TRUE);
+      drupal_set_message(t("In order to use the Newsletter2Go API the variable 'newsletter2go_key' must be set included in settings.php's \$conf array. See newsletter2go module's README.txt for more info."), 'error', FALSE);
       return FALSE;
     }
   }
@@ -98,25 +98,33 @@ function newsletter2go_send_newsletter($newsletter_id) {
   if(!empty($response['status']) && $response['status'] == 200) {
     return TRUE;
   }
-  else {
-    return FALSE;
-  }
+  return FALSE;
 }
 
 function newsletter2go_get_newsletter($newsletter_id) {
-  $n2go = newsletter2go_get_client();
-  $params = array(
-    'id' => (int) $newsletter_id,
-  );
-  return($n2go->getNewsletter($params));
+  if($n2go = newsletter2go_get_client()) {
+    $params = array(
+      'id' => (int) $newsletter_id,
+    );
+    $response = $n2go->getNewsletter($params);
+    if(!empty($response['status']) && $response['status'] == 200) {
+      return($response['value']);
+    }
+  }
+  return FALSE;
 }
 
 function newsletter2go_get_newsletter_statistics($newsletter_id) {
-  $n2go = newsletter2go_get_client();
-  $params = array(
-    'id' => (int) $newsletter_id,
-  );
-  return($n2go->getStatistics($params));
+  if($n2go = newsletter2go_get_client()) {
+    $params = array(
+      'id' => (int) $newsletter_id,
+    );
+    $response = $n2go->getStatistics($params);
+    if(!empty($response['status']) && $response['status'] == 200) {
+      return($response['value']);
+    }
+  }
+  return FALSE;
 }
 
 function newsletter2go_create_newsletter($newsletter_name, $subject, $html, $from, $text = '', $reply = NULL, $reference = NULL) {
@@ -135,5 +143,8 @@ function newsletter2go_create_newsletter($newsletter_name, $subject, $html, $fro
     'reply' => $reply,
     'reference' => $reference,
   );
-  return($n2go->createNL($params));
+  $response = $n2go->createNL($params);
+  if(!empty($response['status']) && $response['status'] == 200) {
+    return($response['value']);
+  }
 }
