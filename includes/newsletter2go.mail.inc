@@ -219,10 +219,16 @@ class Newsletter2GoMailSystem implements MailSystemInterface {
       'html'    => $body,
     );
 
-    $response = $n2g->sendEmail(array_merge($params_optional, $params_required));
+    $params = array_merge($params_optional, $params_required);
+    $response = $n2g->sendEmail($params);
     if($response['status'] == 200) {
       return TRUE;
     }
+    $args = array(
+      '!status' => $response['status'],
+      '!reason' => $response['reason'],
+    );
+    watchdog('newsletter2go', 'Failed to send email via Newsletter2Go. status: !status; reason: !reason.', $args, WATCHDOG_NOTICE);
     return FALSE;
   }
 }
