@@ -1,4 +1,6 @@
-This module makes it easier to send emails with Newsletter2Go.
+# Newsletter2Go (Drupal 7 module)
+
+This module makes it easier to send one-off emails with Newsletter2Go.
 
 __DEPENDANCIES__
 
@@ -31,7 +33,7 @@ there are two options.
     1) Change mailsystem config at admin/config/system/mailsystem
     2) mailsystem_set(array(mailsystem_default_id() => 'Newsletter2GoMailSystem'));
 
-__USAGE___
+__USAGE__
 
 For a NON-PRODUCTION working example see the code in newsletter2go_example.
 
