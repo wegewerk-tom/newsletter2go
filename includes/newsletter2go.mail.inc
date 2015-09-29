@@ -2,7 +2,7 @@
 
 /**
  * @file
- *  Newsletter2Go implementation of MailSystemInterface.
+ *   Newsletter2Go implementation of MailSystemInterface.
  */
 
 /**
